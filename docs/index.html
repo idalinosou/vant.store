@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>vant.store — loja de periféricos e setup</title>
+  <meta name="description" content="Loja virtual da suíte vant: catálogo com busca e filtros, carrinho com controle de estoque, checkout simulado e acompanhamento de pedidos. API em Spring Boot." />
+  <meta name="theme-color" content="#070d12" />
+  <link rel="icon" href="marca/favicon-32.png" sizes="32x32" type="image/png" />
+  <link rel="icon" href="marca/favicon-64.png" sizes="64x64" type="image/png" />
+  <link rel="apple-touch-icon" href="marca/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=3" />
+</head>
+<body>
+  <a class="pular" href="#conteudo">Ir para o conteúdo</a>
+
+  <header class="topo">
+    <div class="topo-linha">
+      <a class="marca" href="https://idalinosou.github.io/portfolio/" title="Voltar ao portfólio">
+        <img class="marca-logo" src="marca/vant-mark.png" alt="" width="807" height="592" />
+        <span>vant<span class="marca-ponto">.</span>store</span>
+      </a>
+
+      <nav class="nav" aria-label="Seções da loja">
+        <button type="button" class="nav-link ativo" data-vista="loja">Loja</button>
+        <button type="button" class="nav-link" data-vista="pedidos">Pedidos</button>
+        <button type="button" class="nav-link" data-vista="gestao">Gerenciar</button>
+      </nav>
+
+      <div class="topo-acoes">
+        <span id="selo-modo" class="selo">Carregando…</span>
+        <button type="button" class="botao-carrinho" id="abrir-carrinho" aria-expanded="false" aria-controls="gaveta">
+          Carrinho
+          <span class="contagem" id="carrinho-contagem" aria-label="Itens no carrinho">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="conteudo" class="conteudo">
+    <section class="vista" id="vista-loja">
+      <div class="abertura">
+        <p class="rotulo">Loja virtual · Spring Boot</p>
+        <h1>Seu setup começa aqui.</h1>
+        <p class="subtitulo">
+          Periféricos, áudio e acessórios com estoque controlado de verdade:
+          cada pedido baixa o estoque e o cancelamento devolve.
+        </p>
+      </div>
+
+      <div class="filtros" aria-label="Filtros do catálogo">
+        <div class="chips" id="chips-categorias" role="group" aria-label="Categorias"></div>
+        <div class="filtros-linha">
+          <label class="busca">
+            <span class="oculto">Buscar produto</span>
+            <input type="search" id="busca" placeholder="Buscar produto ou descrição…" autocomplete="off" />
+          </label>
+          <label class="ordenacao">
+            <span class="oculto">Ordenar por</span>
+            <select id="ordenar">
+              <option value="nome">Nome (A–Z)</option>
+              <option value="novidades">Novidades</option>
+              <option value="preco-asc">Menor preço</option>
+              <option value="preco-desc">Maior preço</option>
+              <option value="estoque">Menor estoque</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <p class="aviso" id="aviso-loja" role="status" aria-live="polite"></p>
+
+      <div class="grade-produtos" id="grade-produtos"></div>
+      <div class="paginacao" id="paginacao-loja"></div>
+    </section>
+
+    <section class="vista" id="vista-pedidos" hidden>
+      <div class="secao-topo">
+        <div>
+          <p class="rotulo">Operação</p>
+          <h2>Pedidos</h2>
+          <p class="subtitulo">Acompanhe cada etapa: pago, enviado, entregue ou cancelado.</p>
+        </div>
+      </div>
+
+      <div class="chips" id="chips-status" role="group" aria-label="Filtrar por status"></div>
+      <div class="lista-pedidos" id="lista-pedidos"></div>
+      <div class="paginacao" id="paginacao-pedidos"></div>
+    </section>
+
+    <section class="vista" id="vista-gestao" hidden>
+      <div class="secao-topo">
+        <div>
+          <p class="rotulo">Administração</p>
+          <h2>Gerenciar loja</h2>
+          <p class="subtitulo">Resultados do mês, estoque crítico, catálogo e categorias.</p>
+        </div>
+        <label class="seletor-mes">
+          <span class="oculto">Mês do painel</span>
+          <input type="month" id="mes-painel" />
+        </label>
+      </div>
+
+      <div class="cards-painel" id="cards-painel"></div>
+
+      <article class="bloco" aria-label="Evolução das vendas">
+        <div class="bloco-topo">
+          <h3>Vendas por mês</h3>
+          <span class="legenda">últimos 6 meses</span>
+        </div>
+        <div class="evolucao" id="evolucao-painel"></div>
+      </article>
+
+      <div class="duas-colunas">
+        <article class="bloco">
+          <div class="bloco-topo"><h3>Estoque baixo</h3><span class="legenda">3 unidades ou menos</span></div>
+          <ul class="lista-simples" id="lista-estoque"></ul>
+        </article>
+        <article class="bloco">
+          <div class="bloco-topo"><h3>Mais vendidos</h3><span class="legenda">no mês</span></div>
+          <ul class="lista-simples" id="lista-mais-vendidos"></ul>
+        </article>
+      </div>
+
+      <div class="duas-colunas">
+        <article class="bloco">
+          <div class="bloco-topo">
+            <h3 id="titulo-form-produto">Novo produto</h3>
+            <button type="button" class="link-botao" id="cancelar-edicao" hidden>Cancelar edição</button>
+          </div>
+          <form class="formulario" id="form-produto" novalidate>
+            <input type="hidden" id="produto-id" />
+            <label>
+              <span>Nome</span>
+              <input type="text" id="produto-nome" maxlength="120" required />
+            </label>
+            <label>
+              <span>Descrição</span>
+              <textarea id="produto-descricao" rows="2" maxlength="400"></textarea>
+            </label>
+            <div class="formulario-linha">
+              <label>
+                <span>Preço (R$)</span>
+                <input type="number" id="produto-preco" step="0.01" min="0.01" required />
+              </label>
+              <label>
+                <span>Estoque</span>
+                <input type="number" id="produto-estoque" step="1" min="0" max="9999" required />
+              </label>
+            </div>
+            <label>
+              <span>Categoria</span>
+              <select id="produto-categoria" required></select>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" id="produto-ativo" checked />
+              <span>Disponível na loja</span>
+            </label>
+            <p class="erro-formulario" id="erro-produto" role="alert" hidden></p>
+            <button type="submit" class="botao-principal" id="salvar-produto">Cadastrar produto</button>
+          </form>
+        </article>
+
+        <article class="bloco">
+          <div class="bloco-topo"><h3>Catálogo</h3><span class="legenda" id="total-catalogo"></span></div>
+          <div class="tabela-rolagem">
+            <table class="tabela">
+              <thead>
+                <tr><th>Produto</th><th>Preço</th><th>Estoque</th><th>Ações</th></tr>
+              </thead>
+              <tbody id="corpo-catalogo"></tbody>
+            </table>
+          </div>
+        </article>
+      </div>
+
+      <article class="bloco">
+        <div class="bloco-topo"><h3>Categorias</h3><span class="legenda" id="total-categorias"></span></div>
+        <form class="formulario-linha formulario-categoria" id="form-categoria" novalidate>
+          <label class="campo-categoria">
+            <span class="oculto">Nome da categoria</span>
+            <input type="text" id="nome-categoria" maxlength="60" placeholder="Nova categoria" required />
+          </label>
+          <button type="submit" class="botao-secundario">Adicionar</button>
+        </form>
+        <p class="erro-formulario" id="erro-categoria" role="alert" hidden></p>
+        <ul class="lista-categorias" id="lista-categorias"></ul>
+      </article>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>vant.store · parte da suíte <strong>vant.</strong> · loja de demonstração</p>
+    <a href="https://idalinosou.github.io/portfolio/">Voltar ao portfólio</a>
+  </footer>
+
+  <div class="sobreposicao" id="sobreposicao" hidden></div>
+
+  <aside class="gaveta" id="gaveta" aria-label="Carrinho de compras" hidden>
+    <div class="gaveta-topo">
+      <h2>Seu carrinho</h2>
+      <button type="button" class="fechar" id="fechar-carrinho" aria-label="Fechar carrinho">×</button>
+    </div>
+    <div class="gaveta-itens" id="itens-carrinho"></div>
+    <div class="gaveta-rodape">
+      <div class="resumo-linha"><span>Subtotal</span><strong id="subtotal-carrinho">R$ 0,00</strong></div>
+      <p class="nota">Pagamento simulado, sem cobrança real.</p>
+      <button type="button" class="botao-principal" id="ir-checkout">Finalizar compra</button>
+    </div>
+  </aside>
+
+  <dialog class="dialogo" id="dialogo-checkout" aria-labelledby="titulo-checkout">
+    <form method="dialog" class="dialogo-conteudo" id="form-checkout" novalidate>
+      <div class="dialogo-topo">
+        <h2 id="titulo-checkout">Finalizar compra</h2>
+        <button type="button" class="fechar" id="fechar-checkout" aria-label="Fechar">×</button>
+      </div>
+
+      <div id="checkout-campos">
+        <label>
+          <span>Nome completo</span>
+          <input type="text" id="cliente-nome" maxlength="120" required autocomplete="name" />
+        </label>
+        <label>
+          <span>E-mail</span>
+          <input type="email" id="cliente-email" maxlength="160" required autocomplete="email" />
+        </label>
+        <fieldset class="pagamentos">
+          <legend>Forma de pagamento</legend>
+          <label><input type="radio" name="pagamento" value="PIX" checked /> <span>PIX</span></label>
+          <label><input type="radio" name="pagamento" value="CARTAO" /> <span>Cartão</span></label>
+          <label><input type="radio" name="pagamento" value="BOLETO" /> <span>Boleto</span></label>
+        </fieldset>
+        <div class="resumo-checkout" id="resumo-checkout"></div>
+        <p class="erro-formulario" id="erro-checkout" role="alert" hidden></p>
+        <button type="submit" class="botao-principal" id="confirmar-pedido">Confirmar pedido</button>
+      </div>
+
+      <div id="checkout-sucesso" hidden>
+        <p class="selo-sucesso">Pedido confirmado</p>
+        <p class="numero-pedido" id="numero-pedido"></p>
+        <p class="nota" id="resumo-pedido"></p>
+        <div class="dialogo-acoes">
+          <button type="button" class="botao-secundario" id="ver-pedidos">Ver pedidos</button>
+          <button type="button" class="botao-principal" id="continuar-comprando">Continuar comprando</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="app.js?v=3"></script>
+</body>
+</html>
